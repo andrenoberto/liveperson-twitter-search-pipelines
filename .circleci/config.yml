@@ -88,6 +88,9 @@ jobs:
       - run:
           name: Install Ansible
           command: apk add --update ansible
+      - run:
+          name: Install curl
+          command: apk add --update curl
       - retrieve_key_from_mem_stash:
           keyName: BACKEND_PUBLIC_DNS_NAME
       - run:

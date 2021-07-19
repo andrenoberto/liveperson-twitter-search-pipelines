@@ -1,0 +1,41 @@
+- name: Update packages
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: Upgrade packages
+  become: yes
+  apt:
+    upgrade: safe
+
+- name: Install dependencies
+  become: yes
+  apt:
+    update_cache: yes
+    pkg:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg
+    - lsb-release
+
+- name: Add Docker apt key
+  become: true
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker repository
+  become: true
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+
+- name: Install Docker
+  become: yes
+  apt:
+    update_cache: yes
+    pkg:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io

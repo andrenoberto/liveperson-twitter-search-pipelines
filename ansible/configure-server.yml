@@ -1,0 +1,5 @@
+- name: Configure Server
+  hosts: api
+  user: ubuntu
+  roles:
+    - configure-server

@@ -1,9 +1,9 @@
 # LivePerson Twitter Search
 
-LivePerson Twitter Search uses Twitter's API for finding out tweets with `#liveperson` and stores the result into a SQL Lite database. This solution is composed of two different applications:
+LivePerson Twitter Search uses Twitter's API for finding out tweets with `#liveperson` and stores the result into a SQL Lite database. The solution is composed of two different applications:
 
- - A Node.js REST API
- - An Angular web application
+ - A Node.js REST API - [LivePerson Twitter Search - Back-end]
+ - An Angular web application - [LivePerson Twitter Search - Front-end]
 
 # Pipelines
 
@@ -17,3 +17,6 @@ The AWS resources used in this application are:
  - S3
 
 For the sake of simplicity, no complex infrastructure is taken into consideration. Default AWS network resources are used.
+
+[LivePerson Twitter Search - Back-end]: <https://github.com/andrenoberto/liveperson-twitter-search>
+[LivePerson Twitter Search - Front-end]: <https://github.com/andrenoberto/liveperson-twitter-search-fe>

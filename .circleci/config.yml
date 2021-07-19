@@ -1,5 +1,13 @@
 version: 2.1
 
+aws-cli: &aws-cli
+  docker:
+    - image: amazon/aws-cli
+
+python-image: &python-image
+  docker:
+    - image: python:3.7-alpine3.12
+
 commands:
   install_aws_cli:
     description: Installs AWS CLI
@@ -45,10 +53,6 @@ commands:
           command: |
             echo 'export << parameters.keyName >>=$(curl -H "token: ${MEMSTASH_TOKEN}" --request GET https://api.memstash.io/values/<< parameters.keyName >>)' >> $BASH_ENV
 
-aws-cli: &aws-cli
-  docker:
-    - image: amazon/aws-cli
-
 jobs:
   provision-infrastructure:
     <<: *aws-cli
@@ -75,6 +79,23 @@ jobs:
               --tags project=liveperson-twitter-search \
               --stack-name liveperson-twitter-search-fe-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
+  deploy-back-end:
+    <<: *python-image
+    steps:
+      - add_ssh_keys:
+          fingerprints: ["d9:2d:cb:3d:08:54:74:76:0b:fe:d0:f1:7a:b1:b3:0e"]
+      - checkout
+      - run:
+          name: Install Ansible
+          command: apk add --update ansible
+      - retrieve_key_from_mem_stash:
+          keyName: BACKEND_PUBLIC_DNS_NAME
+      - run:
+          name: Deploy back-end
+          command: |
+            source $BASH_ENV
+            echo $BACKEND_PUBLIC_DNS_NAME >> .ansible/inventory.txt
+            ansible-playbook -i ansible/inventory.txt ansible/configure-server.yml
 
 workflows:
   liveperson-twitter-search:
@@ -83,3 +104,5 @@ workflows:
           type: approval
       - provision-infrastructure:
           requires: [hold]
+      - deploy-back-end:
+          requires: [provision-infrastructure]

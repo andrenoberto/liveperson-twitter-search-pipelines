@@ -64,7 +64,7 @@ jobs:
               --parameter-overrides ImageID=${UBUNTU_AMI_ID} KeyName=${SSH_KEY_NAME} \
                 SSHCidrIp=${DEVELOPER_JUMPBOX_CIDR_IP} WebCidrIp=${WEB_CIDR_IP}
           no_output_timeout: 20m
-      - save-key-to-mem-stash:
+      - save_key_to_mem_stash:
           keyName: BACKEND_PUBLIC_DNS_NAME
           keyValue: $(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=liveperson-twitter-search-back-end" --output text)
       - run:
@@ -79,5 +79,7 @@ jobs:
 workflows:
   liveperson-twitter-search:
     jobs:
+      - hold:
+          type: approval
       - provision-infrastructure:
           requires: [hold]

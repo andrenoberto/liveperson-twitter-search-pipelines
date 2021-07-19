@@ -94,7 +94,7 @@ jobs:
           name: Deploy back-end
           command: |
             source $BASH_ENV
-            echo $BACKEND_PUBLIC_DNS_NAME >> .ansible/inventory.txt
+            echo $BACKEND_PUBLIC_DNS_NAME >> ansible/inventory.txt
             ansible-playbook -i ansible/inventory.txt ansible/configure-server.yml
 
 workflows:

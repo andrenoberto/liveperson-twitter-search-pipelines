@@ -68,9 +68,6 @@ jobs:
               --parameter-overrides ImageID=${UBUNTU_AMI_ID} KeyName=${SSH_KEY_NAME} \
                 SSHCidrIp=${DEVELOPER_JUMPBOX_CIDR_IP} WebCidrIp=${WEB_CIDR_IP}
           no_output_timeout: 20m
-      - save_key_to_mem_stash:
-          keyName: BACKEND_PUBLIC_DNS_NAME
-          keyValue: $(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=liveperson-twitter-search-back-end" --output text)
       - run:
           name: Ensure front-end infrastructure exists
           command: |
@@ -89,15 +86,9 @@ jobs:
           name: Install Ansible
           command: apk add --update ansible
       - run:
-          name: Install curl
-          command: apk add --update curl
-      - retrieve_key_from_mem_stash:
-          keyName: BACKEND_PUBLIC_DNS_NAME
-      - run:
           name: Deploy back-end
           command: |
-            source $BASH_ENV
-            echo $BACKEND_PUBLIC_DNS_NAME >> ansible/inventory.txt
+            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filter 'Name=tag:Name,Values=liveperson-twitter-search-back-end' --output text >> ansible/inventory.txt
             ansible-playbook -i ansible/inventory.txt ansible/configure-server.yml
 
 workflows:

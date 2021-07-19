@@ -1,0 +1,83 @@
+version: 2.1
+
+commands:
+  install_aws_cli:
+    description: Installs AWS CLI
+    steps:
+      - run:
+          name: Install AWS CLI
+          command: |
+            sudo apt install -y python3 python3-pip
+            pip3 install --upgrade pip
+            pip3 install awscli
+  install_github_cli:
+    description: Installs GitHub CLI
+    steps:
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install -y gh
+  save_key_to_mem_stash:
+    description: Saves a key to MemStash
+    parameters:
+      keyName:
+        type: string
+      keyValue:
+        type: string
+    steps:
+      - run:
+          name: Save key to MemStash
+          command: |
+            curl -H "Content-Type: text/plain" \
+              -H "token: ${MEMSTASH_TOKEN}" --request PUT \
+              --data "<< parameters.keyValue >>" https://api.memstash.io/values/<< parameters.keyName >>
+  retrieve_key_from_mem_stash:
+    description: Retrieves a key stored in MemStash
+    parameters:
+      keyName:
+        type: string
+    steps:
+      - run:
+          name: Retrieve key from MemStash
+          command: |
+            echo 'export << parameters.keyName >>=$(curl -H "token: ${MEMSTASH_TOKEN}" --request GET https://api.memstash.io/values/<< parameters.keyName >>)' >> $BASH_ENV
+
+aws-cli: &aws-cli
+  docker:
+    - image: amazon/aws-cli
+
+jobs:
+  provision-infrastructure:
+    <<: *aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infrastructure/back-end.yml \
+              --tags project=liveperson-twitter-search \
+              --stack-name liveperson-twitter-search-be \
+              --parameter-overrides ImageID=${UBUNTU_AMI_ID} KeyName=${SSH_KEY_NAME} \
+                SSHCidrIp=${DEVELOPER_JUMPBOX_CIDR_IP} WebCidrIp=${WEB_CIDR_IP}
+          no_output_timeout: 20m
+      - save-key-to-mem-stash:
+          keyName: BACKEND_PUBLIC_DNS_NAME
+          keyValue: $(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=liveperson-twitter-search-back-end" --output text)
+      - run:
+          name: Ensure front-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infrastructure/front-end.yml \
+              --tags project=liveperson-twitter-search \
+              --stack-name liveperson-twitter-search-fe-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
+
+workflows:
+  liveperson-twitter-search:
+    jobs:
+      - provision-infrastructure:
+          requires: [hold]

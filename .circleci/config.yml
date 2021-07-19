@@ -4,10 +4,6 @@ aws-cli: &aws-cli
   docker:
     - image: amazon/aws-cli
 
-python-image: &python-image
-  docker:
-    - image: python:3.7-alpine3.12
-
 commands:
   install_aws_cli:
     description: Installs AWS CLI
@@ -28,30 +24,6 @@ commands:
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
             sudo apt update
             sudo apt install -y gh
-  save_key_to_mem_stash:
-    description: Saves a key to MemStash
-    parameters:
-      keyName:
-        type: string
-      keyValue:
-        type: string
-    steps:
-      - run:
-          name: Save key to MemStash
-          command: |
-            curl -H "Content-Type: text/plain" \
-              -H "token: ${MEMSTASH_TOKEN}" --request PUT \
-              --data "<< parameters.keyValue >>" https://api.memstash.io/values/<< parameters.keyName >>
-  retrieve_key_from_mem_stash:
-    description: Retrieves a key stored in MemStash
-    parameters:
-      keyName:
-        type: string
-    steps:
-      - run:
-          name: Retrieve key from MemStash
-          command: |
-            echo 'export << parameters.keyName >>=$(curl -H "token: ${MEMSTASH_TOKEN}" --request GET https://api.memstash.io/values/<< parameters.keyName >>)' >> $BASH_ENV
 
 jobs:
   provision-infrastructure:
@@ -77,15 +49,14 @@ jobs:
               --stack-name liveperson-twitter-search-fe-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
   deploy-back-end:
-    <<: *python-image
+    <<: *aws-cli
     steps:
       - add_ssh_keys:
           fingerprints: ["d9:2d:cb:3d:08:54:74:76:0b:fe:d0:f1:7a:b1:b3:0e"]
       - checkout
-      - install_aws_cli
       - run:
           name: Install Ansible
-          command: apk add --update ansible
+          command: yum install -y ansible
       - run:
           name: Deploy back-end
           command: |

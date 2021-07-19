@@ -82,6 +82,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["d9:2d:cb:3d:08:54:74:76:0b:fe:d0:f1:7a:b1:b3:0e"]
       - checkout
+      - install_aws_cli
       - run:
           name: Install Ansible
           command: apk add --update ansible

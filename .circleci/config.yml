@@ -25,8 +25,7 @@ jobs:
             aws cloudformation deploy \
               --template-file infrastructure/front-end.yml \
               --tags project=liveperson-twitter-search \
-              --stack-name liveperson-twitter-search-fe \
-              --parameter-overrides
+              --stack-name liveperson-twitter-search-fe
       - run:
           name: Ensure ECR infrastructure exists
           command: |

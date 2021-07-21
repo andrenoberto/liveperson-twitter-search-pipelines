@@ -1,2 +1,3 @@
 # Ignore kubeconfig folder
 ~/
+.idea

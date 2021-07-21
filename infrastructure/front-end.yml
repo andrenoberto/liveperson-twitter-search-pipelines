@@ -3,16 +3,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: >
   LivePerson twitter search front-end stack.
 
-Parameters:
-  ID:
-    Description: Unique identifier.
-    Type: String
-
 Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub liveperson-twitter-search-${ID}
+      BucketName: !Sub liveperson-twitter-search-fe
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html

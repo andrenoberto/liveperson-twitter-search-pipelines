@@ -25,8 +25,15 @@ jobs:
             aws cloudformation deploy \
               --template-file infrastructure/front-end.yml \
               --tags project=liveperson-twitter-search \
-              --stack-name liveperson-twitter-search-fe-${CIRCLE_WORKFLOW_ID:0:7} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
+              --stack-name liveperson-twitter-search-fe \
+              --parameter-overrides
+      - run:
+          name: Ensure ECR infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infrastructure/ecr.yml
+              --tags project=liveperson-twitter-search \
+              --stack-name liveperson-twitter-search-ecr
 
 workflows:
   liveperson-twitter-search:

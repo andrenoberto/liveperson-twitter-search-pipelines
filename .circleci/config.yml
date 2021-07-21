@@ -15,9 +15,7 @@ jobs:
             aws cloudformation deploy \
               --template-file infrastructure/back-end.yml \
               --tags project=liveperson-twitter-search \
-              --stack-name liveperson-twitter-search-be \
-              --parameter-overrides ImageID=${UBUNTU_AMI_ID} KeyName=${SSH_KEY_NAME} \
-                SSHCidrIp=${DEVELOPER_JUMPBOX_CIDR_IP} WebCidrIp=${WEB_CIDR_IP}
+              --stack-name liveperson-twitter-search-be
           no_output_timeout: 20m
       - run:
           name: Ensure front-end infrastructure exists
@@ -26,13 +24,6 @@ jobs:
               --template-file infrastructure/front-end.yml \
               --tags project=liveperson-twitter-search \
               --stack-name liveperson-twitter-search-fe
-      - run:
-          name: Ensure ECR infrastructure exists
-          command: |
-            aws cloudformation deploy \
-              --template-file infrastructure/ecr.yml \
-              --tags project=liveperson-twitter-search \
-              --stack-name liveperson-twitter-search-ecr
 
 workflows:
   liveperson-twitter-search:

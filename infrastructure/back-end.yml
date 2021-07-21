@@ -3,44 +3,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: >
   LivePerson twitter search back-end stack.
 
-Parameters:
-  ImageID:
-    Description: The Amazon Image ID that will be used to provision the instance.
-    Type: String
-  KeyName:
-    Description: The key pair name that will be used to authenticate into this machine.
-    Type: String
-  SSHCidrIp:
-    Description: Range of IP addresses allowed to SSH into the instance.
-    Type: String
-  WebCidrIp:
-    Description: Range of IP addresses allowed to send requests to the web API.
-    Type: String
-
 Resources:
-  InstanceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  LivePersonTwitterSearchRepository:
+    Type: AWS::ECR::Repository
     Properties:
-      GroupName: LivePersonTwitterSearch
-      GroupDescription: Allow port 22 access.
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: !Ref SSHCidrIp
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          CidrIp: !Ref WebCidrIp
-
-  EC2Instance:
-    Type: AWS::EC2::Instance
-    Properties:
-      InstanceType: t2.micro
-      SecurityGroups:
-        - Ref: InstanceSecurityGroup
-      KeyName: !Ref KeyName
-      ImageId: !Ref ImageID
+      RepositoryName: liveperson-twitter-search
       Tags:
         - Key: Name
-          Value: liveperson-twitter-search-back-end
+          Value: liveperson-twitter-search
